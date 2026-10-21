@@ -91,7 +91,8 @@ print(f"Embedding dimension: {embedding_dim}")
 # LOAD DATA: Support Tickets
 # =============================================================================
 print("\nLoading support tickets...")
-with open('../../data/synthetic_tickets.json', 'r') as f:
+#with open('../../data/synthetic_tickets.json', 'r') as f:
+with open('C:/Users/KrishnaS/FDE_IK/RAG_1018/Assignment/SupportDesk-RAG-Workshop/data/synthetic_tickets.json', 'r') as f:    
     tickets = json.load(f)
 print(f"Loaded {len(tickets)} support tickets")
 
@@ -207,8 +208,14 @@ print("PART 2: Computing Similarity Scores")
 print("="*80)
 
 # Create a search query - this is what a user might type
-query = "Users can't login after changing password"
-print(f"\nSearch Query: '{query}'")
+# query = "Users can't login after changing password"
+query1 = "Mobile app keeps crashing"
+query2 = "How to make pizza in the oven"
+#print(f"\nSearch Query: '{query}'")
+print("\n" + "="*80)
+print("COMPARING TWO QUERIES")
+print("="*80)
+
 
 # -----------------------------------------------------------------------------
 # Generate embedding for the query
@@ -218,9 +225,17 @@ print(f"\nSearch Query: '{query}'")
 # 
 # text-embedding-3-small documents + text-embedding-3-large query = WRONG!
 # -----------------------------------------------------------------------------
-query_response = client.embeddings.create(input=[query], model=embedding_model)
-query_embedding = np.array([query_response.data[0].embedding])
-print(f"Query embedding shape: {query_embedding.shape}")  # (1, 1536)
+for q in [query1, query2]:
+    query_response = client.embeddings.create(input=[q], model=embedding_model)
+    query_embedding = np.array([query_response.data[0].embedding])
+    print(f"Query embedding shape: {query_embedding.shape}")  # (1, 1536)
+    sims = cosine_similarity(query_embedding, embeddings)[0]
+    top_idx = np.argmax(sims)
+    
+    print(f"\nQuery: '{q}'")
+    print(f"  Best match: {tickets[top_idx]['title']}")
+    print(f"  Score: {sims[top_idx]:.4f}")
+
 
 # -----------------------------------------------------------------------------
 # Compute cosine similarity between query and ALL tickets
@@ -274,19 +289,23 @@ print("PART 3: Finding Most Similar Tickets")
 print("="*80)
 
 # Get top-5 most similar tickets
-top_k = 5
+top_k = 10
 
 # np.argsort() returns indices that would sort the array (ascending)
 # [::-1] reverses to get descending order (highest similarity first)
 # [:top_k] takes only the top K results
 top_indices = np.argsort(similarities)[::-1][:top_k]
 
-print(f"\nTop {top_k} most similar tickets to query: '{query}'")
+print(f"\nTop {top_k} most similar tickets to query: '{q}'")
 print("-" * 80)
 
 for rank, idx in enumerate(top_indices, 1):
     ticket = tickets[idx]
     score = similarities[idx]
+    
+    #Add Line as part of Assignment
+    if score < 0.5:
+        continue      # Skip low-similarity results (optional)
     
     print(f"\n#{rank} - Similarity: {score:.4f}")
     print(f"Ticket ID: {ticket['ticket_id']}")
@@ -377,7 +396,7 @@ ax2.barh(range(len(selected_indices)), query_similarities, color=colors_bar, alp
 ax2.set_yticks(range(len(selected_indices)))
 ax2.set_yticklabels([f"{tickets[i]['ticket_id']}" for i in selected_indices], fontsize=9)
 ax2.set_xlabel('Similarity to Query', fontweight='bold')
-ax2.set_title(f'Similarity Scores for Query:\n"{query}"\n(Green = Top 5 matches)', 
+ax2.set_title(f'Similarity Scores for Query:\n"{q}"\n(Green = Top 5 matches)', 
              fontweight='bold', fontsize=11)
 ax2.set_xlim(0, 1)
 ax2.grid(axis='x', alpha=0.3)

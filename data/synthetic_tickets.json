@@ -198,5 +198,15 @@
     "priority": "High",
     "created_date": "2024-03-01",
     "resolved_date": "2024-03-02"
+  },
+  {
+    "ticket_id": "TICK-021",
+    "title": "Make Pizza in the oven",
+    "description": "pizza recipe consists of dough, sauce, and cheese. Panner Pizza is a popular variant. The oven should be preheated to 220°C. Bake for 12-15 minutes until crust is golden brown.",
+    "resolution": "Implemented proper pizza-making instructions with clear steps and temperature guidelines.",
+    "category": "Pizza Making",
+    "priority": "High",
+    "created_date": "2024-03-01",
+    "resolved_date": "2024-03-02"
   }
 ]
